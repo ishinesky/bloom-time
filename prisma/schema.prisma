@@ -1,0 +1,69 @@
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String      @id @default(cuid())
+  email         String      @unique
+  password      String
+  displayName   String?
+  photoURL      String?
+  role          String      @default("USER") // SUPER_ADMIN or USER
+  plan          String      @default("FREE") // FREE, PRO, ENTERPRISE
+  status        String      @default("ACTIVE") // ACTIVE, SUSPENDED
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  clients       Client[]
+  projects      Project[]
+  timeEntries   TimeEntry[]
+}
+
+model Client {
+  id        String    @id @default(cuid())
+  name      String
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
+  
+  projects  Project[]
+}
+
+model Project {
+  id          String      @id @default(cuid())
+  name        String
+  color       String
+  status      String      @default("active")
+  budget      Float?      // Total hours or amount
+  budgetType  String      @default("hours") // hours or money
+  clientId    String
+  client      Client      @relation(fields: [clientId], references: [id])
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  createdAt   DateTime    @default(now())
+  
+  timeEntries TimeEntry[]
+}
+
+model TimeEntry {
+  id          String   @id @default(cuid())
+  notes       String?
+  duration    Int      // in seconds
+  date        String   // yyyy-MM-dd
+  isRunning   Boolean  @default(false)
+  startTime   DateTime? @default(now())
+  isBilled    Boolean  @default(false)
+  
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+}
