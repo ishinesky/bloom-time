@@ -1,5 +1,5 @@
-import App from "@/src/App";
+import NextApp from "@/src/next-app";
 
 export default function Page() {
-  return <App />;
+  return <NextApp />;
 }
